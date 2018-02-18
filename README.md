@@ -11,15 +11,15 @@ The purpose of this script is to install Docker and Docker Compose on a Debian b
 ## Applications
 
 ##### Nginx containers
-- Nginx
-- Docker-gen
-- Lets Encrypt
+- [Nginx](https://hub.docker.com/_/nginx/)
+- [docker-gen](https://hub.docker.com/r/jwilder/docker-gen/)
+- [Lets Encrypt](https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion/)
 
 ##### Nextcloud containers
-- Nextcloud
-- MariaDB
-- Solr
-- Redis
-- Collabora Online
+- [Nextcloud](https://hub.docker.com/r/wonderfall/nextcloud/)
+- [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
+- [Solr](https://hub.docker.com/_/solr/)
+- [Redis](https://hub.docker.com/_/redis/)
+- [Collabora Online](https://hub.docker.com/r/collabora/code/)
 
 ##### ...more to come
