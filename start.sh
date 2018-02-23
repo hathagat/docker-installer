@@ -69,25 +69,30 @@ install_docker_compose() {
 
 start_nginx() {
     mkdir -p ${DOCKER_DATA_PATH}/nginx/
-    ln -s ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/nginx/
+    ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/nginx/
     cd ${SCRIPT_PATH}/nginx
 
-    curl https://raw.githubusercontent.com/jwilder/nginx-proxy/master/nginx.tmpl > /root/docker/nginx/nginx.tmpl
+    curl https://raw.githubusercontent.com/jwilder/nginx-proxy/master/nginx.tmpl > ${DOCKER_DATA_PATH}/nginx/nginx.tmpl
+    docker network create proxy_network
     docker-compose up -d
+    # TODO https://github.com/jwilder/docker-gen/issues/223#issuecomment-271085589
 }
 
 test_nginx() {
     docker run -d --name whoami -e VIRTUAL_HOST=whoami.local jwilder/whoami
+    sleep 1s
     curl -H "Host: whoami.local" localhost
-    docker stop whoami && docker rm whoami
+    docker stop whoami
+    sleep 1s
+    docker rm whoami
 }
 
 start_nextcloud() {
     mkdir -p ${DOCKER_DATA_PATH}/nextcloud/
-    ln -s ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/nextcloud/
+    ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/nextcloud/
     cd ${SCRIPT_PATH}/nextcloud
 
-    docker-compose up -d nextcloud-db
+    docker-compose up -d database
     echo "Waiting for database to come up..."
     sleep 15s
     docker-compose up -d

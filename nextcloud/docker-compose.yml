@@ -1,20 +1,23 @@
 version: '2'
 
 networks:
-  default:
-    driver: bridge
+  proxy-tier:
+    external:
+      name: proxy_network
 
 services:
   nextcloud:
     image: wonderfall/nextcloud
     container_name: nextcloud
     depends_on:
-      - nextcloud-db
+      - database
       - solr
       - redis
       - collabora
     ports:
       - "8888:8888"
+    networks:
+      - proxy-tier
     environment:
       - UID=${NEXTCLOUD_UID}
       - GID=${NEXTCLOUD_GID}
@@ -41,9 +44,9 @@ services:
       - ${DOCKER_DATA_PATH}/nextcloud/themes:/nextcloud/themes
     restart: always
 
-  nextcloud-db:
+  database:
     image: webhippie/mariadb
-    container_name: nextcloud_mysql
+    container_name: nextcloud-db
     volumes:
       - ${DOCKER_DATA_PATH}/nextcloud/db:/var/lib/mysql
     environment:
@@ -55,7 +58,7 @@ services:
 
   solr:
     image: solr:6-alpine
-    container_name: nextcloud_solr
+    container_name: nextcloud-solr
     volumes:
       - ${DOCKER_DATA_PATH}/nextcloud/solr:/opt/solr/server/solr/mycores
     entrypoint:
@@ -66,16 +69,18 @@ services:
 
   redis:
     image: redis:alpine
-    container_name: nextcloud_redis
+    container_name: nextcloud-redis
     volumes:
       - ${DOCKER_DATA_PATH}/nextcloud/redis:/data
     restart: always
 
   collabora:
     image: collabora/code
-    container_name: nextcloud_collabora
+    container_name: nextcloud-collabora
     ports:
       - "9980:9980"
+    networks:
+      - proxy-tier
     environment:
       - domain=${COLLABORA_DOMAIN}
       - VIRTUAL_HOST=${COLLABORA_DOMAIN}
