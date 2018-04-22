@@ -16,11 +16,16 @@ display_menu() {
 ========================================
     Docker Installer
 ----------------------------------------
+    Basic Installation:
     1) Install Docker
     2) Install or update Docker Compose
+
+    Application Container:
     3) Start or update Nginx
     4) Test Nginx
-    5) Start or update Nextcloud
+    5) Start or update DynDNS
+    6) Start or update Nextcloud
+    7) Start or update Hubzilla
 
     q) Quit
 ----------------------------------------
@@ -33,7 +38,9 @@ EOF
     "2")  clear && echo && install_docker_compose ;;
     "3")  clear && echo && start_nginx ;;
     "4")  clear && echo && test_nginx ;;
-    "5")  clear && echo && start_nextcloud ;;
+    "5")  clear && echo && start_dyndns ;;
+    "6")  clear && echo && start_nextcloud ;;
+    "7")  clear && echo && start_hubzilla ;;
     "q")  exit ;;
      * )  echo "invalid option" ;;
     esac
@@ -75,7 +82,6 @@ start_nginx() {
     curl https://raw.githubusercontent.com/jwilder/nginx-proxy/master/nginx.tmpl > ${DOCKER_DATA_PATH}/nginx/nginx.tmpl
     docker network create proxy_network
     docker-compose up -d
-    # TODO https://github.com/jwilder/docker-gen/issues/223#issuecomment-271085589
 }
 
 test_nginx() {
@@ -87,14 +93,29 @@ test_nginx() {
     docker rm whoami
 }
 
+start_dyndns() {
+    mkdir -p ${DOCKER_DATA_PATH}/dyndns/
+    ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/dyndns/
+    cd ${SCRIPT_PATH}/dyndns
+    docker-compose up -d
+}
+
+
 start_nextcloud() {
     mkdir -p ${DOCKER_DATA_PATH}/nextcloud/
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/nextcloud/
     cd ${SCRIPT_PATH}/nextcloud
 
     docker-compose up -d database
-    echo "Waiting for database to come up..."
+    echo "Waiting for the database to come up..."
     sleep 15s
+    docker-compose up -d
+}
+
+start_hubzilla() {
+    mkdir -p ${DOCKER_DATA_PATH}/hubzilla/
+    ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/hubzilla/
+    cd ${SCRIPT_PATH}/hubzilla
     docker-compose up -d
 }
 

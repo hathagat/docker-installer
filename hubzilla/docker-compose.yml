@@ -1,0 +1,37 @@
+version: '2'
+
+networks:
+  proxy-tier:
+    external:
+      name: proxy_network
+
+services:
+  hubzilla:
+    image: silviof/hubzilla-docker
+    container_name: hubzilla
+    depends_on:
+      - database
+    ports:
+      - "80:8090"
+    networks:
+      - proxy-tier
+    environment:
+      - SERVERNAME=${HUBZILLA_DOMAIN}
+      - VIRTUAL_HOST=${HUBZILLA_DOMAIN}
+      - LETSENCRYPT_HOST=${HUBZILLA_DOMAIN}
+      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+    volumes:
+      - ${DOCKER_DATA_PATH}/hubzilla/data:/data
+    restart: always
+
+  database:
+    image: webhippie/mariadb
+    container_name: hubzilla-db
+    volumes:
+      - ${DOCKER_DATA_PATH}/hubzilla/db:/var/lib/mysql
+    environment:
+      - MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MARIADB_DATABASE=${MYSQL_DATABASE}
+      - MARIADB_USERNAME=${MYSQL_USERNAME}
+      - MARIADB_PASSWORD=${MYSQL_PASSWORD}
+    restart: always
