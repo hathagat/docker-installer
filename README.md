@@ -10,22 +10,22 @@ The purpose of this script is to install Docker and Docker Compose on a Debian b
 
 ## Applications
 
-##### Nginx containers
+#### Nginx
 - [Nginx](https://hub.docker.com/_/nginx/)
 - [docker-gen](https://hub.docker.com/r/jwilder/docker-gen/)
 - [Lets Encrypt](https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion/)
 
-##### DynDNS containers
+#### DynDNS
 - [DynDNS](https://hub.docker.com/r/davd/docker-ddns/)
 
-##### Nextcloud containers
+#### Nextcloud
 - [Nextcloud](https://hub.docker.com/r/wonderfall/nextcloud/)
 - [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
 - [Solr](https://hub.docker.com/_/solr/)
 - [Redis](https://hub.docker.com/_/redis/)
 - [Collabora Online](https://hub.docker.com/r/collabora/code/)
 
-##### Hubzilla containers
+#### Hubzilla
 - [Hubzilla](https://hub.docker.com/r/silviof/hubzilla-docker/)
 - [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
 
