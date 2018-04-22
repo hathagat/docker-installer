@@ -15,11 +15,18 @@ The purpose of this script is to install Docker and Docker Compose on a Debian b
 - [docker-gen](https://hub.docker.com/r/jwilder/docker-gen/)
 - [Lets Encrypt](https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion/)
 
+##### DynDNS containers
+- [DynDNS](https://hub.docker.com/r/davd/docker-ddns/)
+
 ##### Nextcloud containers
 - [Nextcloud](https://hub.docker.com/r/wonderfall/nextcloud/)
 - [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
 - [Solr](https://hub.docker.com/_/solr/)
 - [Redis](https://hub.docker.com/_/redis/)
 - [Collabora Online](https://hub.docker.com/r/collabora/code/)
+
+##### Hubzilla containers
+- [Hubzilla](https://hub.docker.com/r/silviof/hubzilla-docker/)
+- [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
 
 ##### ...more to come
