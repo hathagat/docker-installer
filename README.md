@@ -18,6 +18,10 @@ The purpose of this script is to install Docker and Docker Compose on a Debian b
 #### DynDNS
 - [DynDNS](https://hub.docker.com/r/davd/docker-ddns/)
 
+#### Wordpress
+- [Wordpress](https://hub.docker.com/_/wordpress/)
+- [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
+
 #### Nextcloud
 - [Nextcloud](https://hub.docker.com/r/wonderfall/nextcloud/)
 - [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)

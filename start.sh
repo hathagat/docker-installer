@@ -24,8 +24,9 @@ display_menu() {
     3) Start or update Nginx
     4) Test Nginx
     5) Start or update DynDNS
-    6) Start or update Nextcloud
-    7) Start or update Hubzilla
+    6) Start or update Wordpress
+    7) Start or update Nextcloud
+    8) Start or update Hubzilla
 
     q) Quit
 ----------------------------------------
@@ -39,8 +40,9 @@ EOF
     "3")  clear && echo && start_nginx ;;
     "4")  clear && echo && test_nginx ;;
     "5")  clear && echo && start_dyndns ;;
-    "6")  clear && echo && start_nextcloud ;;
-    "7")  clear && echo && start_hubzilla ;;
+    "6")  clear && echo && start_wordpress ;;
+    "7")  clear && echo && start_nextcloud ;;
+    "8")  clear && echo && start_hubzilla ;;
     "q")  exit ;;
      * )  echo "invalid option" ;;
     esac
@@ -62,6 +64,7 @@ END
         apt-get update
         apt-get -y install docker-ce
     fi
+    mkdir -p ${DOCKER_DATA_PATH}
     echo
     docker --version
 }
@@ -75,18 +78,18 @@ install_docker_compose() {
 }
 
 start_nginx() {
-    mkdir -p ${DOCKER_DATA_PATH}/nginx/
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/nginx/
     cd ${SCRIPT_PATH}/nginx
-
+    mkdir -p ${DOCKER_DATA_PATH}/nginx
     curl https://raw.githubusercontent.com/jwilder/nginx-proxy/master/nginx.tmpl > ${DOCKER_DATA_PATH}/nginx/nginx.tmpl
-    docker network create proxy_network
+    docker network create proxy
+    docker network create --internal frontends
     docker-compose up -d
 }
 
 test_nginx() {
     docker run -d --name whoami -e VIRTUAL_HOST=whoami.local jwilder/whoami
-    sleep 1s
+    sleep 3s
     curl -H "Host: whoami.local" localhost
     docker stop whoami
     sleep 1s
@@ -94,28 +97,38 @@ test_nginx() {
 }
 
 start_dyndns() {
-    mkdir -p ${DOCKER_DATA_PATH}/dyndns/
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/dyndns/
     cd ${SCRIPT_PATH}/dyndns
     docker-compose up -d
 }
 
+start_wordpress() {
+    ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/wordpress/
+    cd ${SCRIPT_PATH}/wordpress
+
+    docker-compose up -d database
+    echo "Waiting for the database to start..."
+    sleep 10s
+    docker-compose up -d
+}
 
 start_nextcloud() {
-    mkdir -p ${DOCKER_DATA_PATH}/nextcloud/
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/nextcloud/
     cd ${SCRIPT_PATH}/nextcloud
 
     docker-compose up -d database
-    echo "Waiting for the database to come up..."
-    sleep 15s
+    echo "Waiting for the database to start..."
+    sleep 10s
     docker-compose up -d
 }
 
 start_hubzilla() {
-    mkdir -p ${DOCKER_DATA_PATH}/hubzilla/
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/hubzilla/
     cd ${SCRIPT_PATH}/hubzilla
+
+    docker-compose up -d database
+    echo "Waiting for the database to start..."
+    sleep 10s
     docker-compose up -d
 }
 
