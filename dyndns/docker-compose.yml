@@ -1,30 +1,26 @@
-version: '2'
-
-networks:
-  proxy-tier:
-    external:
-      name: proxy_network
+version: '3'
 
 services:
   dyndns:
-    image: davd/docker-ddns
     container_name: dyndns
+    image: davd/docker-ddns:latest
+    networks:
+      - frontends
     ports:
-      - "8080:8080"
+      - "9001:8080"
       - "53:53"
       - "53:53/udp"
-    networks:
-      - proxy-tier
-    environment:
-      - SHARED_SECRET=${DYNDNS_SECRET}
-      - ZONE=${MY_DOMAIN}
-      - RECORD_TTL=3600
-      - VIRTUAL_HOST=${DYNDNS_DOMAIN}
-      - LETSENCRYPT_HOST=${DYNDNS_DOMAIN}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
     volumes:
-      - /etc/nginx/vhost.d
-      - /usr/share/nginx/html
-      - /etc/nginx/conf.d
       - ${DOCKER_DATA_PATH}/dyndns:/var/cache/bind
+    environment:
+      SHARED_SECRET: ${DYNDNS_SECRET}
+      ZONE: ${MY_DOMAIN}
+      RECORD_TTL: 3600
+      VIRTUAL_HOST: ${DYNDNS_DOMAIN}
+      LETSENCRYPT_HOST: ${DYNDNS_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
     restart: always
+
+networks:
+  frontends:
+    external: true

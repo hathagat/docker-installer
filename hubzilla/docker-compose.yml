@@ -1,37 +1,41 @@
-version: '2'
-
-networks:
-  proxy-tier:
-    external:
-      name: proxy_network
+version: '3'
 
 services:
-  hubzilla:
-    image: silviof/hubzilla-docker
-    container_name: hubzilla
-    depends_on:
-      - database
-    ports:
-      - "8090:80"
+  database:
+    container_name: hubzilla-db
+    image: webhippie/mariadb:latest
     networks:
-      - proxy-tier
-    environment:
-      - SERVERNAME=${HUBZILLA_DOMAIN}
-      - VIRTUAL_HOST=${HUBZILLA_DOMAIN}
-      - LETSENCRYPT_HOST=${HUBZILLA_DOMAIN}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+      - backend
     volumes:
-      - ${DOCKER_DATA_PATH}/hubzilla/data:/data
+      - ${DOCKER_DATA_PATH}/hubzilla/database:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: ${HUBZILLA_DB_ROOT_PASS}
+      MARIADB_DATABASE: ${HUBZILLA_DB_NAME}
+      MARIADB_USERNAME: ${HUBZILLA_DB_USER}
+      MARIADB_PASSWORD: ${HUBZILLA_DB_PASS}
     restart: always
 
-  database:
-    image: webhippie/mariadb
-    container_name: hubzilla-db
+  hubzilla:
+    container_name: hubzilla
+    image: silviof/hubzilla-docker:latest
+    depends_on:
+      - database
+    networks:
+      - frontends
+      - backend
+    ports:
+      - "9005:80"
     volumes:
-      - ${DOCKER_DATA_PATH}/hubzilla/db:/var/lib/mysql
+      - ${DOCKER_DATA_PATH}/hubzilla/data:/data
     environment:
-      - MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MARIADB_DATABASE=${MYSQL_DATABASE}
-      - MARIADB_USERNAME=${MYSQL_USERNAME}
-      - MARIADB_PASSWORD=${MYSQL_PASSWORD}
+      SERVERNAME: ${HUBZILLA_DOMAIN}
+      VIRTUAL_HOST: ${HUBZILLA_DOMAIN}
+      LETSENCRYPT_HOST: ${HUBZILLA_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
     restart: always
+
+networks:
+  frontends:
+    external: true
+  backend:
+    internal: true

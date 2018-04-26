@@ -1,64 +1,34 @@
-version: '2'
-
-networks:
-  proxy-tier:
-    external:
-      name: proxy_network
+version: '3'
 
 services:
-  nextcloud:
-    image: wonderfall/nextcloud
-    container_name: nextcloud
-    depends_on:
-      - database
-      - solr
-      - redis
-      - collabora
-    ports:
-      - "8888:8888"
+  database:
+    container_name: nextcloud-db
+    image: webhippie/mariadb:latest
     networks:
-      - proxy-tier
-    environment:
-      - UID=${NEXTCLOUD_UID}
-      - GID=${NEXTCLOUD_GID}
-      - UPLOAD_MAX_SIZE=10G
-      - APC_SHM_SIZE=128M
-      - OPCACHE_MEM_SIZE=128
-      - CRON_PERIOD=15m
-      - TZ=Europe/Berlin
-      - ADMIN_USER=${NEXTCLOUD_ADMIN_USER}
-      - ADMIN_PASSWORD=${NEXTCLOUD_ADMIN_PASSWORD}
-      - DOMAIN=${NEXTCLOUD_DOMAIN}
-      - DB_TYPE=mysql
-      - DB_NAME=${MYSQL_DATABASE}
-      - DB_USER=${MYSQL_USERNAME}
-      - DB_PASSWORD=${MYSQL_PASSWORD}
-      - DB_HOST=nextcloud-db
-      - VIRTUAL_HOST=${NEXTCLOUD_DOMAIN}
-      - LETSENCRYPT_HOST=${NEXTCLOUD_DOMAIN}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+      - backend
     volumes:
-      - ${DOCKER_DATA_PATH}/nextcloud/data:/data
-      - ${DOCKER_DATA_PATH}/nextcloud/config:/config
-      - ${DOCKER_DATA_PATH}/nextcloud/apps:/apps2
-      - ${DOCKER_DATA_PATH}/nextcloud/themes:/nextcloud/themes
+      - ${DOCKER_DATA_PATH}/nextcloud/database:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: ${NEXTCLOUD_DB_ROOT_PASS}
+      MARIADB_DATABASE: ${NEXTCLOUD_DB_NAME}
+      MARIADB_USERNAME: ${NEXTCLOUD_DB_USER}
+      MARIADB_PASSWORD: ${NEXTCLOUD_DB_PASS}
     restart: always
 
-  database:
-    image: webhippie/mariadb
-    container_name: nextcloud-db
+  redis:
+    container_name: nextcloud-redis
+    image: redis:alpine
+    networks:
+      - backend
     volumes:
-      - ${DOCKER_DATA_PATH}/nextcloud/db:/var/lib/mysql
-    environment:
-      - MARIADB_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MARIADB_DATABASE=${MYSQL_DATABASE}
-      - MARIADB_USERNAME=${MYSQL_USERNAME}
-      - MARIADB_PASSWORD=${MYSQL_PASSWORD}
+      - ${DOCKER_DATA_PATH}/nextcloud/redis:/data
     restart: always
 
   solr:
-    image: solr:6-alpine
     container_name: nextcloud-solr
+    image: solr:6-alpine
+    networks:
+      - backend
     volumes:
       - ${DOCKER_DATA_PATH}/nextcloud/solr:/opt/solr/server/solr/mycores
     entrypoint:
@@ -67,26 +37,64 @@ services:
       - nextant
     restart: always
 
-  redis:
-    image: redis:alpine
-    container_name: nextcloud-redis
-    volumes:
-      - ${DOCKER_DATA_PATH}/nextcloud/redis:/data
-    restart: always
-
   collabora:
-    image: collabora/code
     container_name: nextcloud-collabora
+    image: collabora/code:latest
     ports:
-      - "9980:9980"
+      - "9004:9980"
     networks:
-      - proxy-tier
+      - frontends
+      - backend
     environment:
-      - domain=${COLLABORA_DOMAIN}
-      - VIRTUAL_HOST=${COLLABORA_DOMAIN}
-      - LETSENCRYPT_HOST=${COLLABORA_DOMAIN}
-      - LETSENCRYPT_EMAIL=${LETSENCRYPT_EMAIL}
+      DOMAIN: ${COLLABORA_DOMAIN}
+      VIRTUAL_HOST: ${COLLABORA_DOMAIN}
+      LETSENCRYPT_HOST: ${COLLABORA_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
     cap_add:
       - MKNOD
     tty: true
     restart: always
+
+  nextcloud:
+    container_name: nextcloud
+    image: wonderfall/nextcloud:latest
+    depends_on:
+      - database
+      - redis
+      - solr
+    networks:
+      - frontends
+      - backend
+    ports:
+      - "9003:8888"
+    volumes:
+      - ${DOCKER_DATA_PATH}/nextcloud/data:/data
+      - ${DOCKER_DATA_PATH}/nextcloud/config:/config
+      - ${DOCKER_DATA_PATH}/nextcloud/apps:/apps2
+      - ${DOCKER_DATA_PATH}/nextcloud/themes:/nextcloud/themes
+    environment:
+      UID: 1313
+      GID: 1313
+      UPLOAD_MAX_SIZE: 10G
+      APC_SHM_SIZE: 128M
+      OPCACHE_MEM_SIZE: 128
+      CRON_PERIOD: 15m
+      TZ: Europe/Berlin
+      ADMIN_USER: ${NEXTCLOUD_ADMIN_USER}
+      ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}
+      DOMAIN: ${NEXTCLOUD_DOMAIN}
+      DB_NAME: ${NEXTCLOUD_DB_NAME}
+      DB_USER: ${NEXTCLOUD_DB_USER}
+      DB_PASSWORD: ${NEXTCLOUD_DB_PASS}
+      DB_TYPE: mysql
+      DB_HOST: database
+      VIRTUAL_HOST: ${NEXTCLOUD_DOMAIN}
+      LETSENCRYPT_HOST: ${NEXTCLOUD_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    restart: always
+
+networks:
+  frontends:
+    external: true
+  backend:
+    internal: true
