@@ -82,8 +82,7 @@ start_nginx() {
     cd ${SCRIPT_PATH}/nginx
     mkdir -p ${DOCKER_DATA_PATH}/nginx
     curl https://raw.githubusercontent.com/jwilder/nginx-proxy/master/nginx.tmpl > ${DOCKER_DATA_PATH}/nginx/nginx.tmpl
-    docker network create proxy
-    docker network create --internal frontends
+    docker network create frontends
     docker-compose up -d
 }
 
