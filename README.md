@@ -8,6 +8,11 @@ The purpose of this script is to install Docker and Docker Compose on a Debian b
 - edit .env to suit your needs
 - run start.sh
 
+You can easily test the Nginx stack by running the [whoami](https://github.com/jwilder/whoami) service like this:
+```
+docker run --name whoami -e VIRTUAL_HOST=whoami.domain.tld -e LETSENCRYPT_HOST=whoami.domain.tld -e LETSENCRYPT_EMAIL=ssl@domain.tld --net frontends jwilder/whoami
+```
+
 ## Applications
 
 #### Nginx
