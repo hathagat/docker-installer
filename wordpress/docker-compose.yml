@@ -10,14 +10,14 @@ services:
       - ${DOCKER_DATA_PATH}/wordpress/database:/var/lib/mysql
     environment:
       MARIADB_ROOT_PASSWORD: ${WORDPRESS_DB_ROOT_PASS}
-      MARIADB_DATABASE: ${WORDPRESS_DB_NAME}
+      MARIADB_DATABASE: wordpress
       MARIADB_USERNAME: ${WORDPRESS_DB_USER}
       MARIADB_PASSWORD: ${WORDPRESS_DB_PASS}
     restart: always
 
   wordpress:
     container_name: wordpress
-    image: wordpress:fpm-alpine
+    image: wordpress:latest
     depends_on:
       - database
     networks:
@@ -27,7 +27,7 @@ services:
       - "9002:80"
     environment:
       WORDPRESS_DB_HOST: database:3306
-      WORDPRESS_DB_NAME: ${WORDPRESS_DB_NAME}
+      WORDPRESS_DB_NAME: wordpress
       WORDPRESS_DB_USER: ${WORDPRESS_DB_USER}
       WORDPRESS_DB_PASSWORD: ${WORDPRESS_DB_PASS}
       VIRTUAL_HOST: ${WORDPRESS_DOMAIN}
