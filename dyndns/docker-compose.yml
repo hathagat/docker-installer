@@ -7,7 +7,6 @@ services:
     networks:
       - frontends
     ports:
-      - "9001:8080"
       - "53:53"
       - "53:53/udp"
     volumes:
@@ -17,6 +16,7 @@ services:
       ZONE: ${MY_DOMAIN}
       RECORD_TTL: 3600
       VIRTUAL_HOST: ${DYNDNS_DOMAIN}
+      VIRTUAL_PORT: 8080
       LETSENCRYPT_HOST: ${DYNDNS_DOMAIN}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
     restart: always
