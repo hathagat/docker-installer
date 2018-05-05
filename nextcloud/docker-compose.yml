@@ -40,19 +40,20 @@ services:
   collabora:
     container_name: nextcloud-collabora
     image: collabora/code:latest
-    ports:
-      - "9004:9980"
+    expose:
+      - "9980"
     networks:
       - frontends
-      - backend
     environment:
-      DOMAIN: ${COLLABORA_DOMAIN}
+      domain: ${COLLABORA_NEXTCLOUD_DOMAIN}
+      username: ${COLLABORA_USER}
+      password: ${COLLABORA_PASS}
+      VIRTUAL_PROTO: https
       VIRTUAL_HOST: ${COLLABORA_DOMAIN}
       LETSENCRYPT_HOST: ${COLLABORA_DOMAIN}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
     cap_add:
       - MKNOD
-    tty: true
     restart: always
 
   nextcloud:
@@ -65,16 +66,16 @@ services:
     networks:
       - frontends
       - backend
-    ports:
-      - "9003:8888"
+    expose:
+      - "8888"
     volumes:
       - ${DOCKER_DATA_PATH}/nextcloud/data:/data
       - ${DOCKER_DATA_PATH}/nextcloud/config:/config
       - ${DOCKER_DATA_PATH}/nextcloud/apps:/apps2
       - ${DOCKER_DATA_PATH}/nextcloud/themes:/nextcloud/themes
     environment:
-      UID: 1313
-      GID: 1313
+      UID: 0
+      GID: 0
       UPLOAD_MAX_SIZE: 10G
       APC_SHM_SIZE: 128M
       OPCACHE_MEM_SIZE: 128
