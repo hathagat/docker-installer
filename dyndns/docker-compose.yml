@@ -9,6 +9,8 @@ services:
     ports:
       - "53:53"
       - "53:53/udp"
+    expose:
+      - "8080"
     volumes:
       - ${DOCKER_DATA_PATH}/dyndns:/var/cache/bind
     environment:
