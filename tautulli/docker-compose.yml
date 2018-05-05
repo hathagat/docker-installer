@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  tautulli:
+    container_name: tautulli
+    image: linuxserver/tautulli:latest
+    networks:
+      - frontends
+    expose:
+      - "8181"
+    volumes:
+      - ${DOCKER_DATA_PATH}/tautulli:/config
+      - ${PLEX_LOGS_PATH}:logs:ro
+    environment:
+      PUID: 0
+      PGID: 0
+      TZ: ${TIMEZONE}
+      VIRTUAL_HOST: ${TAUTULLI_DOMAIN}
+      VIRTUAL_PORT: 8181
+      LETSENCRYPT_HOST: ${TAUTULLI_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    restart: always
+
+networks:
+  frontends:
+    external: true

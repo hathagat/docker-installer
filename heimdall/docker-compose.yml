@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  heimdall:
+    container_name: heimdall
+    image: linuxserver/heimdall:latest
+    networks:
+      - frontends
+    expose:
+      - "443"
+    volumes:
+      - ${DOCKER_DATA_PATH}/heimdall:/config
+    environment:
+      PUID: 0
+      PGID: 0
+      TZ: ${TIMEZONE}
+      VIRTUAL_HOST: ${HEIMDALL_DOMAIN}
+      VIRTUAL_PORT: 443
+      LETSENCRYPT_HOST: ${HEIMDALL_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    restart: always
+
+networks:
+  frontends:
+    external: true

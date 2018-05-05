@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+  database:
+    container_name: gitea-db
+    image: webhippie/mariadb:latest
+    networks:
+      - backend
+    volumes:
+      - ${DOCKER_DATA_PATH}/gitea/database:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: ${GITEA_DB_ROOT_PASS}
+      MARIADB_DATABASE: gitea
+      MARIADB_USERNAME: gitea
+      MARIADB_PASSWORD: ${GITEA_DB_PASS}
+    restart: always
+
+  gitea:
+    container_name: gitea
+    image: gitea/gitea:latest
+    depends_on:
+      - database
+    networks:
+      - frontends
+      - backend
+    ports:
+      - ${SSH_PORT}:22
+    expose:
+      - "3000"
+    volumes:
+      - ${DOCKER_DATA_PATH}/gitea/data:/data
+    environment:
+      VIRTUAL_HOST: ${GITEA_DOMAIN}
+      VIRTUAL_PORT: 3000
+      LETSENCRYPT_HOST: ${GITEA_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    restart: always
+
+networks:
+  frontends:
+    external: true
+  backend:
+    internal: true

@@ -17,16 +17,19 @@ display_menu() {
     Docker Installer
 ----------------------------------------
     Basic Installation:
-    1) Install Docker
-    2) Install or update Docker Compose
+    1)  Install Docker
+    2)  Install or update Docker Compose
 
     Application Container:
-    3) Start or update Nginx
-    4) Test Nginx
-    5) Start or update DynDNS
-    6) Start or update Wordpress
-    7) Start or update Nextcloud
-    8) Start or update Hubzilla
+    3)  Start or update Nginx
+    4)  Test Nginx
+    5)  Start or update DynDNS
+    6)  Start or update Heimdall
+    7)  Start or update Wordpress
+    8)  Start or update Gitea
+    9)  Start or update Nextcloud
+    10) Start or update Hubzilla
+    11) Start or update Tautulli
 
     q) Quit
 ----------------------------------------
@@ -40,9 +43,12 @@ EOF
     "3")  clear && echo && start_nginx ;;
     "4")  clear && echo && test_nginx ;;
     "5")  clear && echo && start_dyndns ;;
-    "6")  clear && echo && start_wordpress ;;
-    "7")  clear && echo && start_nextcloud ;;
-    "8")  clear && echo && start_hubzilla ;;
+    "6")  clear && echo && start_heimdall ;;
+    "7")  clear && echo && start_wordpress ;;
+    "8")  clear && echo && start_gitea ;;
+    "9")  clear && echo && start_nextcloud ;;
+    "10") clear && echo && start_hubzilla ;;
+    "11") clear && echo && start_tautulli ;;
     "q")  exit ;;
      * )  echo "invalid option" ;;
     esac
@@ -101,9 +107,28 @@ start_dyndns() {
     docker-compose up -d
 }
 
+start_heimdall() {
+    ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/heimdall/
+    cd ${SCRIPT_PATH}/heimdall
+    docker-compose up -d
+}
+
 start_wordpress() {
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/wordpress/
     cd ${SCRIPT_PATH}/wordpress
+
+    docker-compose up -d database
+    echo "Waiting for the database to start..."
+    sleep 10s
+    docker-compose up -d
+}
+
+start_gitea() {
+    SSH_PORT=$(echo $SSH_CLIENT | awk '{print $3}')
+    echo "SSH_PORT=$SSH_PORT" >> ${SCRIPT_PATH}/.env
+
+    ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/gitea/
+    cd ${SCRIPT_PATH}/gitea
 
     docker-compose up -d database
     echo "Waiting for the database to start..."
@@ -128,6 +153,12 @@ start_hubzilla() {
     docker-compose up -d database
     echo "Waiting for the database to start..."
     sleep 10s
+    docker-compose up -d
+}
+
+start_tautulli() {
+    ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/tautulli/
+    cd ${SCRIPT_PATH}/tautulli
     docker-compose up -d
 }
 

@@ -23,8 +23,15 @@ docker run --name whoami -e VIRTUAL_HOST=whoami.domain.tld -e LETSENCRYPT_HOST=w
 #### DynDNS
 - [DynDNS](https://hub.docker.com/r/davd/docker-ddns/)
 
+#### Heimdall
+- [Heimdall](https://hub.docker.com/r/linuxserver/heimdall/)
+
 #### Wordpress
 - [Wordpress](https://hub.docker.com/_/wordpress/)
+- [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
+
+#### Gitea
+- [Gitea](https://hub.docker.com/r/gitea/gitea/)
 - [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
 
 #### Nextcloud
@@ -37,5 +44,8 @@ docker run --name whoami -e VIRTUAL_HOST=whoami.domain.tld -e LETSENCRYPT_HOST=w
 #### Hubzilla
 - [Hubzilla](https://hub.docker.com/r/silviof/hubzilla-docker/)
 - [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
+
+#### Tautulli
+- [Tautulli](https://hub.docker.com/r/linuxserver/tautulli/)
 
 ##### ...more to come
