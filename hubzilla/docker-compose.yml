@@ -23,8 +23,8 @@ services:
     networks:
       - frontends
       - backend
-    ports:
-      - "9005:80"
+    expose:
+      - "80"
     volumes:
       - ${DOCKER_DATA_PATH}/hubzilla/data:/data
     environment:
