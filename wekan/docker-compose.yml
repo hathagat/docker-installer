@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  database:
+    container_name: wekan-db
+    image: mongo:3.2
+    networks:
+      - backend
+    expose:
+      - "27017"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKER_DATA_PATH}/wekan/database:/data/db
+      - ${DOCKER_DATA_PATH}/wekan/dump:/dump
+    command: mongod --smallfiles --oplogSize 128
+    restart: unless-stopped
+
+  wekan:
+    container_name: wekan
+    image: quay.io/wekan/wekan:latest
+    depends_on:
+      - database
+    networks:
+      - frontends
+      - backend
+    expose:
+      - "80"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+    environment:
+      ROOT_URL: https://${WEKAN_DOMAIN}
+      MONGO_URL: mongodb://database:27017/wekan
+      MAIL_URL: ${WEKAN_MAIL_URL}
+      MAIL_FROM: ${WEKAN_MAIL_FROM}
+      VIRTUAL_HOST: ${WEKAN_DOMAIN}
+      LETSENCRYPT_HOST: ${WEKAN_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    restart: unless-stopped
+
+networks:
+  frontends:
+    external: true
+  backend:
+    internal: true
