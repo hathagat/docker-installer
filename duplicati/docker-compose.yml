@@ -1,0 +1,26 @@
+version: '3'
+
+services:
+  duplicati:
+    container_name: duplicati
+    image: linuxserver/duplicati:latest
+    networks:
+      - frontends
+    expose:
+      - "8200"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKER_DATA_PATH}/duplicati/config:/config
+      - ${DOCKER_DATA_PATH}/duplicati/backups:/backups
+      - ${DOCKER_DATA_PATH}:/source
+    environment:
+      PUID: 0
+      PGID: 0
+      VIRTUAL_HOST: ${DUPLICATI_DOMAIN}
+      LETSENCRYPT_HOST: ${DUPLICATI_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    restart: unless-stopped
+
+networks:
+  frontends:
+    external: true
