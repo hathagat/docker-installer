@@ -1,5 +1,7 @@
 # Docker Installer
-The purpose of this script is to install Docker and Docker Compose on a Debian based system and to provide a quick way to get applications up and running.
+The purpose of this script is to provide a quick way to get applications up and running.
+
+The Nginx stack acts as a proxy which automatically generates new certificates and sets up the domains for new applications.
 
 ## Usage
 
@@ -8,7 +10,7 @@ The purpose of this script is to install Docker and Docker Compose on a Debian b
 - edit .env to suit your needs
 - run start.sh
 
-You can easily test the Nginx stack by running the [whoami](https://github.com/jwilder/whoami) service like this:
+You can easily test the Nginx stack by running the [whoami](https://github.com/jwilder/whoami) container like this:
 ```
 docker run --name whoami -e VIRTUAL_HOST=whoami.domain.tld -e LETSENCRYPT_HOST=whoami.domain.tld -e LETSENCRYPT_EMAIL=ssl@domain.tld --net frontends jwilder/whoami
 ```
@@ -19,6 +21,12 @@ docker run --name whoami -e VIRTUAL_HOST=whoami.domain.tld -e LETSENCRYPT_HOST=w
 - [Nginx](https://hub.docker.com/_/nginx/)
 - [docker-gen](https://hub.docker.com/r/jwilder/docker-gen/)
 - [Lets Encrypt](https://hub.docker.com/r/jrcs/letsencrypt-nginx-proxy-companion/)
+
+#### Watchtower
+- [Watchtower](https://hub.docker.com/r/v2tec/watchtower/)
+
+#### Duplicati
+- [Duplicati](https://hub.docker.com/r/linuxserver/duplicati/)
 
 #### DynDNS
 - [DynDNS](https://hub.docker.com/r/davd/docker-ddns/)
@@ -33,6 +41,10 @@ docker run --name whoami -e VIRTUAL_HOST=whoami.domain.tld -e LETSENCRYPT_HOST=w
 #### Gitea
 - [Gitea](https://hub.docker.com/r/gitea/gitea/)
 - [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
+
+#### Wekan
+- [Wekan](https://hub.docker.com/r/wekanteam/wekan/)
+- [MongoDB](https://hub.docker.com/r/library/mongo/)
 
 #### Nextcloud
 - [Nextcloud](https://hub.docker.com/r/wonderfall/nextcloud/)
