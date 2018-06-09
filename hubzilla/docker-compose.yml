@@ -7,13 +7,14 @@ services:
     networks:
       - backend
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/hubzilla/database:/var/lib/mysql
     environment:
       MARIADB_ROOT_PASSWORD: ${HUBZILLA_DB_ROOT_PASS}
       MARIADB_DATABASE: ${HUBZILLA_DB_NAME}
       MARIADB_USERNAME: ${HUBZILLA_DB_USER}
       MARIADB_PASSWORD: ${HUBZILLA_DB_PASS}
-    restart: always
+    restart: unless-stopped
 
   hubzilla:
     container_name: hubzilla
@@ -26,13 +27,14 @@ services:
     expose:
       - "80"
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/hubzilla/data:/data
     environment:
       SERVERNAME: ${HUBZILLA_DOMAIN}
       VIRTUAL_HOST: ${HUBZILLA_DOMAIN}
       LETSENCRYPT_HOST: ${HUBZILLA_DOMAIN}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-    restart: always
+    restart: unless-stopped
 
 networks:
   frontends:

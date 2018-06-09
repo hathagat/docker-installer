@@ -9,6 +9,7 @@ services:
     expose:
       - "443"
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/heimdall:/config
     environment:
       PUID: 0
@@ -18,7 +19,7 @@ services:
       VIRTUAL_PORT: 443
       LETSENCRYPT_HOST: ${HEIMDALL_DOMAIN}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-    restart: always
+    restart: unless-stopped
 
 networks:
   frontends:

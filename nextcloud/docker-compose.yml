@@ -7,13 +7,14 @@ services:
     networks:
       - backend
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/nextcloud/database:/var/lib/mysql
     environment:
       MARIADB_ROOT_PASSWORD: ${NEXTCLOUD_DB_ROOT_PASS}
       MARIADB_DATABASE: ${NEXTCLOUD_DB_NAME}
       MARIADB_USERNAME: ${NEXTCLOUD_DB_USER}
       MARIADB_PASSWORD: ${NEXTCLOUD_DB_PASS}
-    restart: always
+    restart: unless-stopped
 
   redis:
     container_name: nextcloud-redis
@@ -21,6 +22,7 @@ services:
     networks:
       - backend
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/nextcloud/redis:/data
     restart: always
 
@@ -30,20 +32,23 @@ services:
     networks:
       - backend
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/nextcloud/solr:/opt/solr/server/solr/mycores
     entrypoint:
       - docker-entrypoint.sh
       - solr-precreate
       - nextant
-    restart: always
+    restart: unless-stopped
 
   collabora:
     container_name: nextcloud-collabora
     image: collabora/code:latest
-    expose:
-      - "9980"
     networks:
       - frontends
+    expose:
+      - "9980"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     environment:
       domain: ${COLLABORA_NEXTCLOUD_DOMAIN}
       username: ${COLLABORA_USER}
@@ -54,7 +59,7 @@ services:
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
     cap_add:
       - MKNOD
-    restart: always
+    restart: unless-stopped
 
   nextcloud:
     container_name: nextcloud
@@ -69,6 +74,7 @@ services:
     expose:
       - "8888"
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/nextcloud/data:/data
       - ${DOCKER_DATA_PATH}/nextcloud/config:/config
       - ${DOCKER_DATA_PATH}/nextcloud/apps:/apps2
@@ -92,7 +98,7 @@ services:
       VIRTUAL_HOST: ${NEXTCLOUD_DOMAIN}
       LETSENCRYPT_HOST: ${NEXTCLOUD_DOMAIN}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-    restart: always
+    restart: unless-stopped
 
 networks:
   frontends:

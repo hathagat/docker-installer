@@ -21,7 +21,7 @@ services:
       VIRTUAL_PORT: 8080
       LETSENCRYPT_HOST: ${DYNDNS_DOMAIN}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-    restart: always
+    restart: unless-stopped
 
 networks:
   frontends:

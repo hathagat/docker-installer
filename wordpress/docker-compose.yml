@@ -7,13 +7,14 @@ services:
     networks:
       - backend
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/wordpress/database:/var/lib/mysql
     environment:
       MARIADB_ROOT_PASSWORD: ${WORDPRESS_DB_ROOT_PASS}
       MARIADB_DATABASE: wordpress
       MARIADB_USERNAME: ${WORDPRESS_DB_USER}
       MARIADB_PASSWORD: ${WORDPRESS_DB_PASS}
-    restart: always
+    restart: unless-stopped
 
   wordpress:
     container_name: wordpress
@@ -25,6 +26,8 @@ services:
       - backend
     expose:
       - "80"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
     environment:
       WORDPRESS_DB_HOST: database:3306
       WORDPRESS_DB_NAME: wordpress
@@ -33,7 +36,7 @@ services:
       VIRTUAL_HOST: ${WORDPRESS_DOMAIN}
       LETSENCRYPT_HOST: ${WORDPRESS_DOMAIN}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-    restart: always
+    restart: unless-stopped
 
 networks:
   frontends:

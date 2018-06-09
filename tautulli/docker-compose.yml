@@ -9,6 +9,7 @@ services:
     expose:
       - "8181"
     volumes:
+      - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/tautulli:/config
       - ${PLEX_LOGS_PATH}:logs:ro
     environment:
@@ -19,7 +20,7 @@ services:
       VIRTUAL_PORT: 8181
       LETSENCRYPT_HOST: ${TAUTULLI_DOMAIN}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-    restart: always
+    restart: unless-stopped
 
 networks:
   frontends:
