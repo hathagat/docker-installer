@@ -26,20 +26,6 @@ services:
       - ${DOCKER_DATA_PATH}/nextcloud/redis:/data
     restart: always
 
-  solr:
-    container_name: nextcloud-solr
-    image: solr:6-alpine
-    networks:
-      - backend
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - ${DOCKER_DATA_PATH}/nextcloud/solr:/opt/solr/server/solr/mycores
-    entrypoint:
-      - docker-entrypoint.sh
-      - solr-precreate
-      - nextant
-    restart: unless-stopped
-
   collabora:
     container_name: nextcloud-collabora
     image: collabora/code:latest
@@ -49,6 +35,7 @@ services:
       - "9980"
     volumes:
       - /etc/localtime:/etc/localtime:ro
+      - ${DOCKER_DATA_PATH}/nextcloud/collabora:/etc/loolwsd
     environment:
       domain: ${COLLABORA_NEXTCLOUD_DOMAIN}
       username: ${COLLABORA_USER}
@@ -63,11 +50,10 @@ services:
 
   nextcloud:
     container_name: nextcloud
-    image: wonderfall/nextcloud:latest
+    image: wanderfall/nextcloud:latest
     depends_on:
       - database
       - redis
-      - solr
     networks:
       - frontends
       - backend
@@ -79,6 +65,7 @@ services:
       - ${DOCKER_DATA_PATH}/nextcloud/config:/config
       - ${DOCKER_DATA_PATH}/nextcloud/apps:/apps2
       - ${DOCKER_DATA_PATH}/nextcloud/themes:/nextcloud/themes
+      - ${DOCKER_DATA_PATH}/nextcloud/session:/php/session
     environment:
       UID: 0
       GID: 0
