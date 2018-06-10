@@ -36,7 +36,7 @@ display_menu() {
 
 Please enter your choice:
 EOF
-    read -n1 -s
+    read
     case "$REPLY" in
     "1")  clear && echo && start_nginx ;;
     "2")  clear && echo && start_watchtower ;;
@@ -117,6 +117,12 @@ start_gitea() {
     echo "Waiting for the database to start..."
     sleep 10s
     docker-compose up -d
+
+    # dirty fix for Gitea not setting the domain variable
+    echo "Fix domain name"
+    sleep 2s
+    sed -i "/server/a DOMAIN        = ${GITEA_DOMAIN}" ${DOCKER_DATA_PATH}/gitea/data/gitea/conf/app.ini
+    docker-compose restart gitea
 }
 
 start_wekan() {

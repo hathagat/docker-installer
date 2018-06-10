@@ -10,9 +10,9 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/gitea/database:/var/lib/mysql
     environment:
+      MARIADB_DATABASE: ${GITEA_DB_NAME}
       MARIADB_ROOT_PASSWORD: ${GITEA_DB_ROOT_PASS}
-      MARIADB_DATABASE: gitea
-      MARIADB_USERNAME: gitea
+      MARIADB_USERNAME: ${GITEA_DB_USER}
       MARIADB_PASSWORD: ${GITEA_DB_PASS}
     restart: unless-stopped
 
@@ -24,14 +24,26 @@ services:
     networks:
       - frontends
       - backend
-    ports:
-      - ${SSH_PORT}:22
     expose:
       - "3000"
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/gitea/data:/data
     environment:
+      USER_UID: 1000
+      USER_GID: 1000
+      APP_NAME: Gitea
+      RUN_MODE: prod
+      SSH_DOMAIN: ${GITEA_DOMAIN}
+      DISABLE_SSH: "true"
+      ROOT_URL: https://${GITEA_DOMAIN}
+      DB_TYPE: mysql
+      DB_HOST: gitea-db:3306
+      DB_NAME: ${GITEA_DB_NAME}
+      DB_USER: ${GITEA_DB_USER}
+      DB_PASSWD: ${GITEA_DB_PASS}
+      DISABLE_REGISTRATION: "true"
+      REQUIRE_SIGNIN_VIEW: "true"
       VIRTUAL_HOST: ${GITEA_DOMAIN}
       VIRTUAL_PORT: 3000
       LETSENCRYPT_HOST: ${GITEA_DOMAIN}
