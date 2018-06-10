@@ -35,7 +35,6 @@ services:
       - "9980"
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ${DOCKER_DATA_PATH}/nextcloud/collabora:/etc/loolwsd
     environment:
       domain: ${COLLABORA_NEXTCLOUD_DOMAIN}
       username: ${COLLABORA_USER}
@@ -65,10 +64,9 @@ services:
       - ${DOCKER_DATA_PATH}/nextcloud/config:/config
       - ${DOCKER_DATA_PATH}/nextcloud/apps:/apps2
       - ${DOCKER_DATA_PATH}/nextcloud/themes:/nextcloud/themes
-      - ${DOCKER_DATA_PATH}/nextcloud/session:/php/session
     environment:
-      UID: 0
-      GID: 0
+      UID: 1000
+      GID: 1000
       UPLOAD_MAX_SIZE: 10G
       APC_SHM_SIZE: 128M
       OPCACHE_MEM_SIZE: 128

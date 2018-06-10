@@ -1,8 +1,12 @@
 #!/bin/bash
-################################################
-#            Docker Install Script             #
-# https://github.com/hathagat/docker-installer #
-################################################
+#################################################
+#               Docker Installer                #
+#                                               #
+# The purpose of this script is to provide a    #
+# quick way to get applications up and running. #
+#                                               #
+# https://github.com/hathagat/docker-installer  #
+#################################################
 
 SCRIPT_PATH="$( cd "$(dirname "$0")" ; pwd -P )"
 source ${SCRIPT_PATH}/.env
@@ -17,19 +21,19 @@ display_menu() {
 ========================================
     Docker Installer
 ----------------------------------------
-    Application Container:
+    Start Application Container:
 
-    1)  start Nginx
-    2)  start Watchtower
-    3)  start Duplicati
-    4)  start DynDNS
-    5)  start Heimdall
-    6)  start Wordpress
-    7)  start Gitea
-    8)  start Wekan
-    9)  start Nextcloud
-    10) start Hubzilla
-    11) start Tautulli
+    1)  Nginx
+    2)  Watchtower
+    3)  Duplicati
+    4)  DynDNS
+    5)  Heimdall
+    6)  Wordpress
+    7)  Gitea
+    8)  Wekan
+    9)  Nextcloud
+    10) Hubzilla
+    11) Tautulli
 
     q) Quit
 ----------------------------------------
@@ -73,6 +77,13 @@ test_nginx() {
 }
 
 start_watchtower() {
+    DOCKER_CONFIG="${HOME}/.docker/config.json"
+    if [[ ! -f ${DOCKER_CONFIG} ]]
+    then
+        mkdir -p ${HOME}/.docker
+        echo '{\n\n}' >${DOCKER_CONFIG}
+    fi
+
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/watchtower/
     cd ${SCRIPT_PATH}/watchtower
     docker-compose up -d
@@ -119,8 +130,11 @@ start_gitea() {
     docker-compose up -d
 
     # dirty fix for Gitea not setting the domain variable
-    echo "Fix domain name"
-    sleep 2s
+    echo "Fixing Gitea domain name..."
+    while [ ! -f ${DOCKER_DATA_PATH}/gitea/data/gitea/conf/app.ini ]
+    do
+        sleep 2
+    done
     sed -i "/server/a DOMAIN        = ${GITEA_DOMAIN}" ${DOCKER_DATA_PATH}/gitea/data/gitea/conf/app.ini
     docker-compose restart gitea
 }
@@ -139,6 +153,15 @@ start_nextcloud() {
     echo "Waiting for the database to start..."
     sleep 10s
     docker-compose up -d
+
+    echo "Waiting for config.php to be generated to paste redis configuration..."
+    REDIS_CONFIG="  'memcache.distributed' => '\OC\Memcache\Redis',\n  'memcache.locking' => '\OC\Memcache\Redis',  \n'memcache.local' => '\OC\Memcache\APCu',\n  'redis' => array(\n     'host' => 'nextcloud-redis',\n     'port' => 6379,\n     ),"
+    while [ ! -f ${DOCKER_DATA_PATH}/nextcloud/config/config.php ]
+    do
+        sleep 2
+    done
+    sed -i "/memcache.local/c ${REDIS_CONFIG}" ${DOCKER_DATA_PATH}/nextcloud/config/config.php
+    docker-compose restart nextcloud
 }
 
 start_hubzilla() {
