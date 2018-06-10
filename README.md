@@ -40,7 +40,6 @@ docker run --name whoami -e VIRTUAL_HOST=whoami.domain.tld -e LETSENCRYPT_HOST=w
 
 #### [Nextcloud](https://hub.docker.com/r/wonderfall/nextcloud/)
 - [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
-- [Solr](https://hub.docker.com/_/solr/)
 - [Redis](https://hub.docker.com/_/redis/)
 - [Collabora Online](https://hub.docker.com/r/collabora/code/)
 
