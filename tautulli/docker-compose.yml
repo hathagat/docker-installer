@@ -11,7 +11,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/tautulli:/config
-      - ${PLEX_LOGS_PATH}:logs:ro
+      - ${PLEX_LOGS_PATH}:/logs:ro
     environment:
       PUID: 0
       PGID: 0
