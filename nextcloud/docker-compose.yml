@@ -50,7 +50,7 @@ services:
 
   nextcloud:
     container_name: nextcloud
-    image: wanderfall/nextcloud:latest
+    image: benyanke/nextcloud:latest
     depends_on:
       - database
       - redis
