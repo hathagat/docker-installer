@@ -9,8 +9,8 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock
-      - /root/.docker/config.json:/config.json
-    command: --cleanup --stop-timeout 60s
+      - ${HOME}/.docker/config.json:/config.json
+    command: --cleanup
     restart: unless-stopped
 
 networks:
