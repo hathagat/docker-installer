@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  database:
+    container_name: lychee-db
+    image: webhippie/mariadb:latest
+    networks:
+      - backend
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKER_DATA_PATH}/lychee/database:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: qwertz
+      MARIADB_DATABASE: qwertz
+      MARIADB_USERNAME: qwertz
+      MARIADB_PASSWORD: qwertz
+    restart: unless-stopped
+
+  lychee:
+    container_name: lychee
+    image: linuxserver/lychee:latest
+    networks:
+      - frontends
+      - backend
+    expose:
+      - "80"
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ${DOCKER_DATA_PATH}/lychee/config:/config
+      - ${DOCKER_DATA_PATH}/lychee/pictures:/pictures
+      - ${DOCKER_DATA_PATH}/lychee/uploads:/usr/share/webapps/lychee/uploads
+      - ${DOCKER_DATA_PATH}/lychee/import:/usr/share/webapps/lychee/uploads/import
+    environment:
+      PUID: 1010
+      PGID: 1010
+      VIRTUAL_HOST: gitcloud.de
+      LETSENCRYPT_HOST: gitcloud.de
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    restart: unless-stopped
+
+networks:
+  frontends:
+    external: true
+  backend:
+    internal: true
