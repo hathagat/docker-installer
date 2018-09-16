@@ -1,0 +1,24 @@
+version: '3'
+
+services:
+  openproject:
+    container_name: openproject
+    image: openproject/community:latest
+    networks:
+      - frontends
+    expose:
+      - "80"
+    volumes:
+      - ${DOCKER_DATA_PATH}/openproject/data:/var/lib/postgresql/9.6/main
+      - ${DOCKER_DATA_PATH}/openproject/logs:/var/log/supervisor
+      - ${DOCKER_DATA_PATH}/openproject:/var/db/openproject
+    environment:
+      SECRET_KEY_BASE: Y4Pkp7FRd534Vszb5imM
+      VIRTUAL_HOST: project.hathagat.de
+      LETSENCRYPT_HOST: project.hathagat.de
+      LETSENCRYPT_EMAIL: ssl@sourcemail.de
+    restart: unless-stopped
+
+networks:
+  frontends:
+    external: true
