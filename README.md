@@ -5,7 +5,8 @@ The Nginx stack acts as a proxy which automatically generates new certificates a
 
 ## Usage
 
-- clone or download this repository
+- install [Docker](https://docs.docker.com/install/) and [Docker Compose](https://docs.docker.com/compose/install/)
+- clone or [download](https://github.com/hathagat/docker-installer/archive/master.zip) this repository
 - copy sample.env to .env
 - edit .env to suit your needs
 - run start.sh
@@ -40,7 +41,6 @@ docker run --name whoami -e VIRTUAL_HOST=whoami.domain.tld -e LETSENCRYPT_HOST=w
 
 #### [Nextcloud](https://hub.docker.com/r/wonderfall/nextcloud/)
 - [MariaDB](https://hub.docker.com/r/webhippie/mariadb/)
-- [Solr](https://hub.docker.com/_/solr/)
 - [Redis](https://hub.docker.com/_/redis/)
 - [Collabora Online](https://hub.docker.com/r/collabora/code/)
 
