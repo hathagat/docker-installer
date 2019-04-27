@@ -2,8 +2,8 @@ version: '3'
 
 services:
   database:
-    container_name: nextcloud-db
     image: webhippie/mariadb:latest
+    container_name: nextcloud-database
     networks:
       - backend
     volumes:
@@ -17,42 +17,41 @@ services:
     restart: unless-stopped
 
   redis:
-    container_name: nextcloud-redis
     image: redis:alpine
+    container_name: nextcloud-redis
+    command: redis-server --requirepass ${NEXTCLOUD_REDIS_PASS}
     networks:
       - backend
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - ${DOCKER_DATA_PATH}/nextcloud/redis:/data
-    restart: always
-
-  collabora:
-    container_name: nextcloud-collabora
-    image: collabora/code:latest
-    networks:
-      - frontends
-    expose:
-      - "9980"
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-    environment:
-      domain: ${COLLABORA_NEXTCLOUD_DOMAIN}
-      username: ${COLLABORA_USER}
-      password: ${COLLABORA_PASS}
-      VIRTUAL_PROTO: https
-      VIRTUAL_HOST: ${COLLABORA_DOMAIN}
-      LETSENCRYPT_HOST: ${COLLABORA_DOMAIN}
-      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
-    cap_add:
-      - MKNOD
     restart: unless-stopped
 
+  # https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud
+  onlyoffice:
+    image: onlyoffice/documentserver:latest
+    container_name: nextcloud-onlyoffice
+    networks:
+    - backend
+    expose:
+    - '80'
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ${DOCKER_DATA_PATH}/nextcloud/onlyoffice/data:/var/www/onlyoffice/Data
+    - ${DOCKER_DATA_PATH}/nextcloud/onlyoffice/log:/var/log/onlyoffice
+    restart: unless-stopped
+
+  # build from:
+  # Apps wie hier z.B. beschrieben (mindestens OnlyOffice, FullTextSearch und Redis):
+  # https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud/blob/master/set_configuration.sh
   nextcloud:
+    #image: benyanke/nextcloud:latest
+    build: ./app
     container_name: nextcloud
-    image: benyanke/nextcloud:latest
     depends_on:
       - database
       - redis
+      - onlyoffice
     networks:
       - frontends
       - backend
@@ -64,6 +63,7 @@ services:
       - ${DOCKER_DATA_PATH}/nextcloud/config:/config
       - ${DOCKER_DATA_PATH}/nextcloud/apps:/apps2
       - ${DOCKER_DATA_PATH}/nextcloud/themes:/nextcloud/themes
+      - ${DOCKER_DATA_PATH}/nextcloud/session:/php/session
     environment:
       UID: 1000
       GID: 1000
@@ -73,13 +73,14 @@ services:
       CRON_PERIOD: 15m
       TZ: Europe/Berlin
       ADMIN_USER: ${NEXTCLOUD_ADMIN_USER}
-      ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}
+      ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASS}
       DOMAIN: ${NEXTCLOUD_DOMAIN}
       DB_NAME: ${NEXTCLOUD_DB_NAME}
       DB_USER: ${NEXTCLOUD_DB_USER}
       DB_PASSWORD: ${NEXTCLOUD_DB_PASS}
       DB_TYPE: mysql
       DB_HOST: database
+      APP_AUTO_UPDATE: 1
       VIRTUAL_HOST: ${NEXTCLOUD_DOMAIN}
       LETSENCRYPT_HOST: ${NEXTCLOUD_DOMAIN}
       LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
