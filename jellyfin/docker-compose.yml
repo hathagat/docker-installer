@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  jellyfin:
+    container_name: jellyfin
+    image: jellyfin/jellyfin:latest
+    networks:
+    - frontends
+    expose:
+    - "8096"
+    volumes:
+    - ${DOCKER_DATA_PATH}/jellyfin/config:/config
+    - ${DOCKER_DATA_PATH}/jellyfin/cache:/cache
+    - ${DOCKER_DATA_PATH}/jellyfin/media:/mnt/library
+    environment:
+      VIRTUAL_HOST: ${JELLYFIN_DOMAIN}
+      LETSENCRYPT_HOST: ${JELLYFIN_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    restart: unless-stopped
+
+networks:
+  frontends:
+    external: true

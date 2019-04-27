@@ -36,6 +36,7 @@ display_menu() {
     11) Tautulli
     12) OpenProject
     13) Lychee
+    14) Jellyfin
 
     q) Quit
 ----------------------------------------
@@ -57,6 +58,7 @@ EOF
     "11") clear && echo && start_tautulli ;;
     "12") clear && echo && start_openproject ;;
     "13") clear && echo && start_lychee ;;
+    "14") clear && echo && start_jellyfin ;;
     "q")  exit ;;
      * )  echo "invalid option" ;;
     esac
@@ -293,6 +295,13 @@ start_lychee() {
     # TODO Variablen setzen
     # TODO Nginx hinzufügen: client_max_body_size 0;
     # entweder sauber template anpassen oder halt per sed einfügen...
+    docker-compose up -d
+}
+
+start_jellyfin() {
+    ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/jellyfin/
+    cd ${SCRIPT_PATH}/jellyfin
+    # TODO testen!
     docker-compose up -d
 }
 
