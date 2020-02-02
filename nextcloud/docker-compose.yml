@@ -41,17 +41,76 @@ services:
     - ${DOCKER_DATA_PATH}/nextcloud/onlyoffice/log:/var/log/onlyoffice
     restart: unless-stopped
 
-  # build from:
-  # Apps wie hier z.B. beschrieben (mindestens OnlyOffice, FullTextSearch und Redis):
+  # https://github.com/instrumentisto/coturn-docker-image
+  coturn:
+    image: instrumentisto/coturn:latest
+    container_name: nextcloud-turn
+    networks:
+    - frontends
+    - backend
+    expose:
+    - '3478'
+    - '3478/udp'
+    - '49160-49200/udp'
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ${DOCKER_DATA_PATH}/nextcloud/turn/turnserver.conf:/etc/coturn/turnserver.conf
+    - ${DOCKER_DATA_PATH}/nextcloud/turn/data:/var/lib/coturn
+    environment:
+      VIRTUAL_HOST: ${NEXTCLOUD_DOMAIN}
+      VIRTUAL_PORT: 3478
+      LETSENCRYPT_HOST: ${NEXTCLOUD_DOMAIN}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    restart: unless-stopped
+
+  # https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html
+  # https://github.com/nextcloud/fulltextsearch/wiki/Basic-Installation
+  elasticsearch:
+    build: ./elasticsearch
+    container_name: nextcloud-elasticsearch
+    networks:
+    - backend
+    expose:
+    - "9200"
+    volumes:
+    - /etc/localtime:/etc/localtime:ro
+    - ${DOCKER_DATA_PATH}/nextcloud/elasticsearch/readonlyrest.yml:/etc/elasticsearch/readonlyrest.yml
+    - ${DOCKER_DATA_PATH}/nextcloud/elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml
+    - ${DOCKER_DATA_PATH}/nextcloud/elasticsearch/data:/usr/share/elasticsearch/data
+    - ${DOCKER_DATA_PATH}/nextcloud/elasticsearch/log:/usr/share/elasticsearch/log
+    environment:
+    - cluster.name=nextcloud
+    - bootstrap.memory_lock=true
+    - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    restart: unless-stopped
+
+  # https://github.com/tesseract-shadow/tesseract-ocr-re
+  # https://github.com/daita/files_fulltextsearch_tesseract
+#  tesseract:
+#    image: tesseractshadow/tesseract4re:latest
+#    container_name: nextcloud-tesseract
+#    networks:
+#    - backend
+#    volumes:
+#    - /etc/localtime:/etc/localtime:ro
+#    - ${DOCKER_DATA_PATH}/nextcloud/tesseract/tessdata:/usr/share/tessdata/
+#    restart: always
+
   # https://github.com/ONLYOFFICE/docker-onlyoffice-nextcloud/blob/master/set_configuration.sh
   nextcloud:
-    #image: benyanke/nextcloud:latest
     build: ./app
     container_name: nextcloud
     depends_on:
       - database
       - redis
       - onlyoffice
+      - coturn
+      - elasticsearch
+#      - tesseract
     networks:
       - frontends
       - backend

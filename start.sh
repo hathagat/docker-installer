@@ -63,27 +63,20 @@ EOF
      * )  echo "invalid option" ;;
     esac
     done
-
-    # TODO https://hub.docker.com/search/?q=mail
-
-    # TODO Prometheus und Grafana https://andrewaadland.net/2018/01/18/hosting-your-own-cloud/
 }
 
-# TODO alle ymls in den Hauptordner, jede so benannt wie die derzeitigen Unterordenr
-# dann Aufruf: docker-compose -f nginx.yml -p <yamlDateiNameBisZumPunkt> up -d
-
-# TODO Proxy Templates können wohl so sehr einfach erstellt werden:
-# https://github.com/nextcloud/docker/tree/master/.examples/docker-compose/with-nginx-proxy/mariadb-cron-redis/fpm/proxy
-
+# Configuration:
+# https://github.com/jwilder/nginx-proxy#per-virtual_host
+# https://github.com/jwilder/nginx-proxy#per-virtual_host-location-configuration
 start_nginx() {
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/nginx/
     cd ${SCRIPT_PATH}/nginx
     mkdir -p ${DOCKER_DATA_PATH}/nginx
     curl https://raw.githubusercontent.com/jwilder/nginx-proxy/master/nginx.tmpl > ${DOCKER_DATA_PATH}/nginx/nginx.tmpl
+    sed -i '/access_log off;/i server_tokens off;' ${DOCKER_DATA_PATH}/nginx/nginx.tmpl
+
     docker-compose up -d
     docker logs letsencrypt
-
-    # TODO https://github.com/jwilder/docker-gen/issues/223#issuecomment-271085589
 }
 
 test_nginx() {
@@ -106,9 +99,6 @@ start_watchtower() {
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/watchtower/
     cd ${SCRIPT_PATH}/watchtower
     docker-compose up -d
-
-    # TODO --stop-timeout ist noch nicht released -> auf Version nach 0.3.0 warten
-    # TODO https://github.com/v2tec/watchtower#notifications
 }
 
 start_duplicati() {
@@ -159,9 +149,6 @@ start_gitea() {
     done
     sed -i "/server/a DOMAIN        = ${GITEA_DOMAIN}" ${DOCKER_DATA_PATH}/gitea/data/gitea/conf/app.ini
     docker-compose restart gitea
-
-    # TODO SSH aktivieren und durch den Host schleusen
-    # z.B. so: http://www.ateijelo.com/blog/2016/07/09/share-port-22-between-docker-gogs-ssh-and-local-system
 }
 
 start_wekan() {
@@ -170,21 +157,20 @@ start_wekan() {
     docker-compose up -d
 }
 
-# TODO Infos: NC config, nginx, OO Pfade:
 # https://help.nextcloud.com/t/onlyoffice-error-while-downloading-the-document-file-to-be-converted/45195/5
 
 start_nextcloud() {
-    # TODO eigene Funktion, können dann alle nutzen
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/nextcloud/
     cd ${SCRIPT_PATH}/nextcloud
-    # TODO check, ob nginx läuft. Wenn nicht, start_nginx()
 
     docker-compose up -d database
     echo "Waiting for the database to start..."
-    # TODO https://github.com/blacklabelops/jira#database-wait-feature
+    # WAIT-FOR: https://docs.docker.com/compose/startup-order/
     sleep 10s
 
     update_nc_webserver
+    set_coturn_config
+    set_readonlyrest_config
     docker-compose up -d --build --force-recreate
 
     echo "Waiting for Nextcloud to finish startup configuration. This may take some time..."
@@ -212,9 +198,10 @@ start_nextcloud() {
     docker exec nextcloud occ config:system:set memcache.locking --value="\OC\Memcache\Redis" >/dev/null
 
     install_onlyoffice
+    install_fulltextsearch
+
     docker-compose restart nextcloud
 }
-
 
 update_nc_webserver() {
     wget -qO ${SCRIPT_PATH}/nextcloud/app/nginx.conf https://raw.githubusercontent.com/benyanke/docker-nextcloud/master/rootfs/nginx/sites-enabled/nginx.conf
@@ -253,6 +240,31 @@ map $http_x_forwarded_host $real_host {\
 ' ${SCRIPT_PATH}/nextcloud/app/nginx.conf
 }
 
+set_coturn_config() {
+    wget -qO turnserver.conf https://raw.githubusercontent.com/coturn/coturn/master/examples/etc/turnserver.conf
+
+    #sed -i "s/^#external-ip/external-ip=???/g" turnserver.conf
+    sed -i "s/^#log-file/log-file=stdout/g" turnserver.conf
+    sed -i "s/^#min-port/min-port=49160/g" turnserver.conf
+    sed -i "s/^#max-port/max-port=49200/g" turnserver.conf
+    sed -i "s/^#listening-port/listening-port=3478/g" turnserver.conf
+    sed -i "s/^#fingerprint/fingerprint/g" turnserver.conf
+    sed -i "s/^#lt-cred-mech/lt-cred-mech/g" turnserver.conf
+    sed -i "s/^#use-auth-secret/use-auth-secret/g" turnserver.conf
+    sed -i "s/^#static-auth-secret/static-auth-secret=${NEXTCLOUD_TURN_SECRET}/g" turnserver.conf
+    sed -i "s/^#realm/realm=${NEXTCLOUD_DOMAIN}/g" turnserver.conf
+    sed -i "s/^#total-quota/total-quota=100/g" turnserver.conf
+    sed -i "s/^#bps-capacity/bps-capacity=0/g" turnserver.conf
+    sed -i "s/^#stale-nonce/stale-nonce/g" turnserver.conf
+    sed -i "s/^#no-loopback-peers/no-loopback-peers/g" turnserver.conf
+    sed -i "s/^#no-multicast-peers/no-multicast-peers/g" turnserver.conf
+    sed -i "s/^#no-tlsv1/no-tlsv1/g" turnserver.conf
+    sed -i "s/^#no-tlsv1_1/no-tlsv1_1/g" turnserver.conf
+
+    mkdir -p ${DOCKER_DATA_PATH}/nextcloud/turn
+    mv turnserver.conf ${DOCKER_DATA_PATH}/nextcloud/turn/turnserver.conf
+}
+
 install_onlyoffice() {
     docker exec nextcloud occ app:install onlyoffice
 
@@ -261,6 +273,25 @@ install_onlyoffice() {
     docker exec nextcloud occ config:system:set onlyoffice StorageUrl --value="http://nextcloud:8888/" >/dev/null
 
     docker exec nextcloud-onlyoffice supervisorctl status all
+}
+
+set_readonlyrest_config() {
+    # Place current version of https://readonlyrest.com/download/ in elasticsearch folder and edit Dockerfile.
+    sed -i "s/^username: USER/username: ${NEXTCLOUD_FTS_USER}/g" ${SCRIPT_PATH}/nextcloud/elasticsearch/readonlyrest.yml
+    sed -i "s/^auth_key: USER:PASS/auth_key: ${NEXTCLOUD_FTS_USER}:${NEXTCLOUD_FTS_PASS}/g" ${SCRIPT_PATH}/nextcloud/elasticsearch/readonlyrest.yml
+}
+
+install_fulltextsearch() {
+    # https://www.elastic.co/guide/en/elasticsearch/reference/current/vm-max-map-count.html
+    echo "vm.max_map_count=262144" >> /etc/sysctl.conf && sysctl -p
+
+    docker exec nextcloud occ app:install fulltextsearch
+    docker exec nextcloud occ app:install fulltextsearch_elasticsearch
+    docker exec nextcloud occ app:install files_fulltextsearch
+    #docker exec nextcloud occ app:install bookmarks_fulltextsearch
+
+    # https://github.com/nextcloud/fulltextsearch/wiki/Basic-Installation#first-index
+    docker exec nextcloud occ fulltextsearch:index
 }
 
 start_hubzilla() {
@@ -282,9 +313,7 @@ start_tautulli() {
 start_openproject() {
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/openproject/
     cd ${SCRIPT_PATH}/openproject
-    # TODO externe Datenbank hinzufügen
-    # siehe "Production" hier: https://hub.docker.com/r/openproject/community/
-    # und auch hier: https://www.openproject.org/docker/
+
     docker-compose up -d
 }
 
@@ -292,16 +321,14 @@ start_lychee() {
     # database host in Lychee UI is "database"
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/lychee/
     cd ${SCRIPT_PATH}/lychee
-    # TODO Variablen setzen
-    # TODO Nginx hinzufügen: client_max_body_size 0;
-    # entweder sauber template anpassen oder halt per sed einfügen...
+
     docker-compose up -d
 }
 
 start_jellyfin() {
     ln -sf ${SCRIPT_PATH}/.env ${SCRIPT_PATH}/jellyfin/
     cd ${SCRIPT_PATH}/jellyfin
-    # TODO testen!
+
     docker-compose up -d
 }
 
